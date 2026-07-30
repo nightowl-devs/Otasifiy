@@ -1,0 +1,28 @@
+name: Publish OTA Update
+
+on:
+  push:
+    branches: [main, staging, production]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: oven-sh/setup-bun@v2
+
+      - run: bun install
+
+      - name: Publish update
+        run: |
+          bun run scripts/publish-update.ts \
+            --server ${{ secrets.UPDATE_SERVER_URL }} \
+            --project-id ${{ secrets.PROJECT_ID }} \
+            --api-key ${{ secrets.API_KEY }}
+        env:
+          API_KEY: ${{ secrets.API_KEY }}

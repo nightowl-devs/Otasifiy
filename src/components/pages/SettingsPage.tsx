@@ -1,0 +1,243 @@
+"use client";
+
+import {
+  CopyIcon,
+  ExternalLinkIcon,
+  RotateCcwIcon,
+  SaveIcon,
+  TriangleAlertIcon,
+} from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useProject } from "@/context/project-context";
+import { useUpdateProject } from "@/hooks/use-projects";
+import { slugify } from "@/lib/utils";
+
+export function SettingsPage() {
+  const { project } = useProject();
+  const [name, setName] = useState(project.name);
+  const [slug, setSlug] = useState(project.slug);
+  const [error, setError] = useState("");
+  const [copiedId, setCopiedId] = useState(false);
+  const [copiedManifest, setCopiedManifest] = useState(false);
+  const [copiedApiKey, setCopiedApiKey] = useState(false);
+  const [origin, setOrigin] = useState("");
+  const updateProject = useUpdateProject();
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
+
+  async function handleSave() {
+    if (!name.trim() || !slug.trim()) return;
+    setError("");
+    try {
+      await updateProject.mutateAsync({
+        id: project.id,
+        name: name.trim(),
+        slug: slug.trim(),
+      });
+    } catch (_e) {
+      setError("Failed to save");
+    }
+  }
+
+  async function copy(text: string, setter: (copied: boolean) => void) {
+    await navigator.clipboard.writeText(text);
+    setter(true);
+    setTimeout(() => setter(false), 2000);
+  }
+
+  async function handleRegenerateKey() {
+    await updateProject.mutateAsync({
+      id: project.id,
+      regenerateApiKey: true,
+    });
+  }
+
+  const manifestUrl = `${origin}/api/manifest?slug=${project.slug}`;
+
+  return (
+    <div className="mx-auto max-w-6xl p-8">
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold text-zinc-100">Settings</h1>
+      </div>
+
+      <div className="space-y-6">
+        <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-6">
+          <h2 className="mb-4 text-sm font-medium text-zinc-100">
+            Project details
+          </h2>
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="settings-name"
+                className="mb-1 block text-xs text-zinc-500"
+              >
+                Name
+              </label>
+              <input
+                id="settings-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="settings-slug"
+                className="mb-1 block text-xs text-zinc-500"
+              >
+                Slug
+              </label>
+              <input
+                id="settings-slug"
+                value={slug}
+                onChange={(e) => setSlug(slugify(e.target.value))}
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
+              />
+            </div>
+            {error && <p className="text-sm text-red-400">{error}</p>}
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+              disabled={!name.trim() || !slug.trim() || updateProject.isPending}
+              onClick={handleSave}
+            >
+              <SaveIcon className="size-4 mr-1" />
+              {updateProject.isPending ? "Saving..." : "Save"}
+            </Button>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-6">
+          <h2 className="mb-4 text-sm font-medium text-zinc-100">API key</h2>
+          <p className="mb-3 text-sm text-zinc-500">
+            Use this key to authenticate publish requests from CI. Include it as{" "}
+            <code className="rounded bg-zinc-800 px-1 py-0.5 text-xs text-zinc-300">
+              Authorization: Bearer &lt;key&gt;
+            </code>
+            .
+          </p>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 truncate rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 font-mono text-xs text-zinc-300">
+              {project.apiKey}
+            </code>
+            <button
+              type="button"
+              onClick={() => copy(project.apiKey, setCopiedApiKey)}
+              className="shrink-0 text-zinc-500 hover:text-zinc-300 transition-colors"
+            >
+              <CopyIcon className="size-4" />
+            </button>
+            {copiedApiKey && (
+              <span className="shrink-0 text-xs text-green-400">Copied!</span>
+            )}
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mt-3 text-zinc-500 hover:text-zinc-300"
+            onClick={handleRegenerateKey}
+          >
+            <RotateCcwIcon className="size-3.5 mr-1" />
+            Regenerate
+          </Button>
+        </div>
+
+        <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-6">
+          <h2 className="mb-4 text-sm font-medium text-zinc-100">
+            Project info
+          </h2>
+          <div className="space-y-3 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-zinc-500">ID</span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs text-zinc-300">
+                  {project.id}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => copy(project.id, setCopiedId)}
+                  className="text-zinc-500 hover:text-zinc-300 transition-colors"
+                >
+                  <CopyIcon className="size-3.5" />
+                </button>
+                {copiedId && (
+                  <span className="text-xs text-green-400">Copied!</span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="text-zinc-500">Slug</span>
+              <span className="text-zinc-300">{project.slug}</span>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="text-zinc-500">Manifest URL</span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs text-zinc-300 max-w-64 truncate">
+                  {manifestUrl}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => copy(manifestUrl, setCopiedManifest)}
+                  className="text-zinc-500 hover:text-zinc-300 transition-colors"
+                >
+                  <CopyIcon className="size-3.5" />
+                </button>
+                {copiedManifest && (
+                  <span className="text-xs text-green-400">Copied!</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {project.githubRepo && (
+          <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-6">
+            <h2 className="mb-4 text-sm font-medium text-zinc-100">
+              GitHub repository
+            </h2>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-zinc-400">
+                {project.githubRepo}
+              </span>
+              <a
+                href={`https://github.com/${project.githubRepo}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-zinc-500 hover:text-zinc-300 transition-colors"
+              >
+                <ExternalLinkIcon className="size-4" />
+              </a>
+            </div>
+          </div>
+        )}
+
+        <div className="rounded-lg border border-red-900/50 bg-zinc-900/50 p-6">
+          <h2 className="mb-4 text-sm font-medium text-red-400 flex items-center gap-2">
+            <TriangleAlertIcon className="size-4" />
+            Danger zone
+          </h2>
+          <p className="mb-4 text-sm text-zinc-500">
+            Permanently delete this project and all associated data. This action
+            cannot be undone.
+          </p>
+          <Link href="/dashboard">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-red-800 text-red-400 hover:bg-red-950"
+            >
+              Delete project
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}

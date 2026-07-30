@@ -1,0 +1,155 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Platform {
+  ios
+  android
+}
+
+enum ProjectRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+}
+
+model Project {
+  id          String        @id @default(uuid())
+  name        String
+  slug        String        @unique
+  githubRepo  String?
+  apiKey      String    @unique
+  environments Environment[]
+  user        User          @relation(fields: [userId], references: [id])
+  updates     Update[]
+  memberships ProjectMembership[]
+  invites     ProjectInvite[]
+  userId      String
+}
+
+model Environment {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  name      String
+  branch    String
+  updates   Update[]
+  project   Project? @relation(fields: [projectId], references: [id])
+  projectId String?
+
+  @@unique([name, projectId])
+}
+
+model Update {
+  id          String      @id @default(uuid())
+  createdAt   DateTime    @default(now())
+  version     String
+  environment Environment @relation(fields: [environmentId], references: [id])
+  disabled    Boolean     @default(false)
+
+  commit        String
+  manifests     Manifest[]
+  environmentId String
+  project       Project?   @relation(fields: [projectId], references: [id])
+  projectId     String?
+  deployPercent Int     @default(100)
+}
+
+model Manifest {
+  id             String   @id @default(uuid())
+  createdAt      DateTime @default(now())
+  runtimeVersion String
+
+  launchAsset   Asset?  @relation(name: "ManifestLaunchAsset", fields: [launchAssetId], references: [id])
+  launchAssetId String? @unique
+
+  assets Asset[] @relation(name: "ManifestAssets")
+
+  metadata Json?
+  extra    Json
+
+  platform Platform
+
+  updateId String
+  update   Update @relation(fields: [updateId], references: [id])
+}
+
+model User {
+  id          String    @id @default(uuid())
+  createdAt   DateTime  @default(now())
+  email       String    @unique
+  sessions    Session[]
+  firstName   String
+  lastName    String
+  avatarUrl   String?
+  githubId    String?   @unique
+  githubToken String?
+  projects    Project[]
+  memberships ProjectMembership[]
+  invitedInvites ProjectInvite[] @relation("invitedBy")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  token     String   @unique @default(uuid())
+}
+
+model Asset {
+  id            String @id @default(uuid())
+  hash          String
+  key           String
+  contentType   String
+  fileExtension String
+  url           String
+  s3Path        String
+
+  manifestId String?
+  manifest   Manifest? @relation(name: "ManifestAssets", fields: [manifestId], references: [id])
+
+  manifestLaunch Manifest? @relation(name: "ManifestLaunchAsset")
+}
+
+model ProjectMembership {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  role      ProjectRole
+
+  @@unique([projectId, userId])
+}
+
+model ProjectInvite {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String
+  email       String
+  role        ProjectRole @default(MEMBER)
+  token       String   @unique @default(uuid())
+  expiresAt   DateTime
+  status      InviteStatus @default(PENDING)
+  invitedBy   User     @relation("invitedBy", fields: [invitedById], references: [id])
+  invitedById String
+}
