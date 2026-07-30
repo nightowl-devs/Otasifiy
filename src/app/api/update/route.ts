@@ -164,7 +164,7 @@ export async function POST(req: NextRequest) {
   const expoConfigJson = JSON.parse(await expoConfigFile.text());
 
   const runtimeVersion =
-    expoConfigJson?.expo?.runtimeVersion ?? expoConfigJson?.runtimeVersion;
+    expoConfigJson.expo?.runtimeVersion ?? expoConfigJson.runtimeVersion;
 
   if (!runtimeVersion) {
     return Response.json(
@@ -338,9 +338,7 @@ export async function POST(req: NextRequest) {
       id: updateId,
       disabled,
       environment: { connect: { id: envRecord.id } },
-      project: envRecord.projectId
-        ? { connect: { id: envRecord.projectId } }
-        : undefined,
+      project: { connect: { id: envRecord.projectId! } },
       commit,
       version,
       manifests: {

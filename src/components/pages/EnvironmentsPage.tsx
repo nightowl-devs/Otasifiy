@@ -51,13 +51,13 @@ function AddEnvironmentDialog({
   onCreated,
 }: {
   branches: string[] | null;
-  projectId: string | null;
+  projectId: string;
   onCreated: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [branch, setBranch] = useState("");
-  const createEnvironment = useCreateEnvironment(projectId ?? "");
+  const createEnvironment = useCreateEnvironment(projectId);
 
   async function handleCreate() {
     if (!name || !branch) return;
@@ -334,7 +334,7 @@ export function EnvironmentsPage() {
     }
   }
 
-  const githubRepo = project.githubRepo ?? null;
+  const githubRepo = project.githubRepo;
 
   return (
     <div className="mx-auto max-w-6xl p-8">

@@ -2,15 +2,11 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(req: Request) {
-  const cookie = (await cookies()).get("session_token");
-  if (!cookie) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+  const cookie = (await cookies()).get("session_token")!;
   const session = await prisma.session.findUnique({
     where: { token: cookie.value, expiresAt: { gt: new Date() } },
     include: { user: true },
-  });
+  })!;
 
   if (!session?.user.githubToken) {
     return Response.json({ error: "No GitHub token" }, { status: 401 });

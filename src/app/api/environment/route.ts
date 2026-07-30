@@ -71,15 +71,8 @@ export async function DELETE(req: NextRequest) {
     return Response.json({ error: "Environment not found." }, { status: 404 });
   }
 
-  if (env.projectId) {
-    const access = await checkProjectAccess(req, env.projectId, "ADMIN");
-    if (access instanceof Response) return access;
-  } else {
-    return Response.json(
-      { error: "Environment has no project association." },
-      { status: 400 },
-    );
-  }
+  const access = await checkProjectAccess(req, env.projectId!, "ADMIN");
+  if (access instanceof Response) return access;
 
   await prisma.update.deleteMany({ where: { environmentId: body.id } });
   await prisma.environment.delete({ where: { id: body.id } });
@@ -105,10 +98,8 @@ export async function PATCH(req: NextRequest) {
     return Response.json({ error: "Environment not found." }, { status: 404 });
   }
 
-  if (env.projectId) {
-    const access = await checkProjectAccess(req, env.projectId, "ADMIN");
-    if (access instanceof Response) return access;
-  }
+  const access = await checkProjectAccess(req, env.projectId!, "ADMIN");
+  if (access instanceof Response) return access;
 
   const updated = await prisma.environment.update({
     where: { id: body.id },

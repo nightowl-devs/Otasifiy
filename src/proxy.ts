@@ -6,11 +6,9 @@ const PUBLIC_ROUTES = [
   "/login",
   "/api/auth/github",
   "/api/auth/github/callback",
-  "/api/auth/logout",
   "/api/asset",
   "/api/manifest",
   "/api/status",
-  "/api/invites/accept",
 ];
 
 const DASHBOARD_PAGES = [
