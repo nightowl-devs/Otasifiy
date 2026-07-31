@@ -36,7 +36,7 @@ export async function POST(
 
   const body = await req.json();
 
-  const emailResult = z.string().email().safeParse(body.email);
+  const emailResult = z.email().safeParse(body.email);
   if (!emailResult.success) {
     return Response.json({ error: "Invalid email format." }, { status: 400 });
   }
