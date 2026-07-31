@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     data: {
       name: body.name,
       slug,
-      apiKey: generateApiKey(),
+      apiKeyHash: await Bun.password.hash(generateApiKey()),
       githubRepo: body.githubRepo ?? null,
       user: { connect: { id: session.user.id } },
       memberships: {

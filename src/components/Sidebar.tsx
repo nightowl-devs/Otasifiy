@@ -47,6 +47,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const { projects, loading } = useProject();
   const hasProjects = !loading && projects.length > 0;
+  console.log("Sidebar render", { projects, loading, hasProjects });
 
   return (
     <aside className="flex  w-56 flex-col border-r border-zinc-800 bg-zinc-950">

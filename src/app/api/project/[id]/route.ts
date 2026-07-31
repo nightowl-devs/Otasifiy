@@ -14,13 +14,17 @@ export async function PATCH(
 
   const body = await req.json();
   const data: Record<string, unknown> = {};
+  let newApiKey: string | undefined;
 
   if (body.name !== undefined) data.name = body.name;
   if (body.slug !== undefined) data.slug = body.slug;
   if (body.githubRepo !== undefined) data.githubRepo = body.githubRepo;
-  if (body.regenerateApiKey) data.apiKey = generateApiKey();
+  if (body.regenerateApiKey) {
+    newApiKey = generateApiKey();
+    data.apiKeyHash = await Bun.password.hash(newApiKey);
+  }
 
-  if (data.slug && typeof data.slug === "string") {
+  if (data.slug) {
     const existing = await prisma.project.findUnique({
       where: { slug: data.slug as string },
     });
@@ -33,6 +37,8 @@ export async function PATCH(
     where: { id },
     data,
   });
+
+  if (newApiKey) return Response.json({ ...updated, apiKeyHash: newApiKey });
 
   return Response.json(updated);
 }

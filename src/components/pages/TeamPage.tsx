@@ -159,10 +159,6 @@ export function TeamPage() {
   const changeRole = useUpdateMemberRole(project.id);
   const removeMember = useRemoveMember(project.id);
   const revokeInvite = useRevokeInvite(project.id);
-
-  const _ownMembership = members.find((m) => m.role === "OWNER");
-  const _ownerCount = members.filter((m) => m.role === "OWNER").length;
-
   return (
     <div className="mx-auto max-w-6xl p-8">
       <div className="mb-6 flex items-center justify-between">

@@ -1,5 +1,5 @@
 import AnalyticsPage from "@/components/pages/AnalyticsPage";
 
-export default async function Analytic() {
+export default function Analytic() {
   return <AnalyticsPage />;
 }

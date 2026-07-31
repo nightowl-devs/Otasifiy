@@ -1,5 +1,5 @@
 import { TeamPage } from "@/components/pages/TeamPage";
 
-export default async function Team() {
+export default function Team() {
   return <TeamPage />;
 }

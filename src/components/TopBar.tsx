@@ -27,6 +27,8 @@ export function TopBar() {
       : "Otasifiy";
   }, [currentProject]);
 
+  console.log("TopBar render", { currentProject, projects, loading });
+
   return (
     <div className="grid grid-cols-[1fr_auto_1fr]     h-16 items-center   border-b border-zinc-800 bg-zinc-950 px-4 top-0">
       <div className="flex items-center gap-4">

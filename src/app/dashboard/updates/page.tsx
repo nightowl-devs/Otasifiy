@@ -1,5 +1,5 @@
 import { UpdatesPage } from "@/components/pages/UpdatesPage";
 
-export default async function Updates() {
+export default function Updates() {
   return <UpdatesPage />;
 }

@@ -34,7 +34,7 @@ model Project {
   name        String
   slug        String        @unique
   githubRepo  String?
-  apiKey      String    @unique
+  apiKeyHash      String    @unique
   environments Environment[]
   user        User          @relation(fields: [userId], references: [id])
   updates     Update[]

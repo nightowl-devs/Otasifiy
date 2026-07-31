@@ -24,6 +24,12 @@ export function SettingsPage() {
   const [copiedApiKey, setCopiedApiKey] = useState(false);
   const [origin, setOrigin] = useState("");
   const updateProject = useUpdateProject();
+  const DEFAULT_API_KEY = "**********************";
+  const [newApiKey, setNewApiKey] = useState(
+    project.apiKeyHash.startsWith("$argon2id")
+      ? DEFAULT_API_KEY
+      : project.apiKeyHash,
+  );
 
   useEffect(() => {
     setOrigin(window.location.origin);
@@ -50,10 +56,11 @@ export function SettingsPage() {
   }
 
   async function handleRegenerateKey() {
-    await updateProject.mutateAsync({
+    const data = await updateProject.mutateAsync({
       id: project.id,
       regenerateApiKey: true,
     });
+    setNewApiKey(data.apiKeyHash);
   }
 
   const manifestUrl = `${origin}/api/manifest?slug=${project.slug}`;
@@ -115,19 +122,20 @@ export function SettingsPage() {
         <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-6">
           <h2 className="mb-4 text-sm font-medium text-zinc-100">API key</h2>
           <p className="mb-3 text-sm text-zinc-500">
-            Use this key to authenticate publish requests from CI. Include it as{" "}
+            Use this key to authenticate update publishing.<br></br>
             <code className="rounded bg-zinc-800 px-1 py-0.5 text-xs text-zinc-300">
-              Authorization: Bearer &lt;key&gt;
+              Authorization: Bearer &lt;API_KEY&gt;
             </code>
             .
           </p>
           <div className="flex items-center gap-2">
             <code className="flex-1 truncate rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 font-mono text-xs text-zinc-300">
-              {project.apiKey}
+              {newApiKey}
             </code>
             <button
               type="button"
-              onClick={() => copy(project.apiKey, setCopiedApiKey)}
+              onClick={() => copy(newApiKey, setCopiedApiKey)}
+              disabled={newApiKey === DEFAULT_API_KEY}
               className="shrink-0 text-zinc-500 hover:text-zinc-300 transition-colors"
             >
               <CopyIcon className="size-4" />
@@ -136,15 +144,23 @@ export function SettingsPage() {
               <span className="shrink-0 text-xs text-green-400">Copied!</span>
             )}
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="mt-3 text-zinc-500 hover:text-zinc-300"
-            onClick={handleRegenerateKey}
-          >
-            <RotateCcwIcon className="size-3.5 mr-1" />
-            Regenerate
-          </Button>
+          <div className="flex flex-col gap-1 mt-2 text-sm">
+            {newApiKey !== DEFAULT_API_KEY && (
+              <span className="shrink-0 text-xs text-red-400">
+                This key will be hidden after you leave this page. Make sure to
+                copy it now!
+              </span>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mt-3 self-start text-zinc-500 hover:text-zinc-300 flex"
+              onClick={handleRegenerateKey}
+            >
+              <RotateCcwIcon className="size-3.5 mr-1  " />
+              Regenerate
+            </Button>
+          </div>
         </div>
 
         <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-6">
@@ -169,11 +185,6 @@ export function SettingsPage() {
                   <span className="text-xs text-green-400">Copied!</span>
                 )}
               </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-zinc-500">Slug</span>
-              <span className="text-zinc-300">{project.slug}</span>
             </div>
 
             <div className="flex items-center justify-between">

@@ -1,5 +1,5 @@
 import { SettingsPage } from "@/components/pages/SettingsPage";
 
-export default async function Settings() {
+export default function Settings() {
   return <SettingsPage />;
 }

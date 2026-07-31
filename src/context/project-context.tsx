@@ -12,15 +12,8 @@ const ProjectContext = createContext<{
   refresh: () => void;
 } | null>(null);
 
-function Loader() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-900">
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-zinc-300" />
-    </div>
-  );
-}
-
 export function ProjectProvider({ children }: { children: React.ReactNode }) {
+  const currRoute = window.location.pathname;
   const { data: projects = [], isLoading, refetch } = useProjects();
   let projectId: string | null = null;
   try {
@@ -42,9 +35,12 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     },
     [refetch],
   );
-
-  if (isLoading && !project) {
-    return <Loader />;
+  if(currRoute !== "/dashboard" && !project) {
+    return (
+      <div className="flex h-screen w-screen  bg-zinc-900 items-center justify-center">
+        <div className="border border-zinc-700 border-t-white rounded-full animate-spin w-12 h-12"></div>
+      </div>
+    );
   }
 
   return (

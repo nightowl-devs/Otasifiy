@@ -46,9 +46,7 @@ export default function ProjectSwitcher({
       >
         <SelectTrigger className={"rounded-md border-1"}>
           <p className="text-sm font-medium text-white">
-            {currentProject.name ||
-              currentProject.githubRepo ||
-              currentProject.id}
+            {currentProject.name}
           </p>
         </SelectTrigger>
         <SelectContent className={"rounded-md"}>

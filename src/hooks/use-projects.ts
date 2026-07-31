@@ -3,7 +3,15 @@ import type { Project } from "@/generated/prisma";
 
 async function fetchProjects(): Promise<Project[]> {
   const res = await fetch("/api/project");
-  return res.json();
+  console.log(
+    "fetchProjects: raw status",
+    res.status,
+    "content-type",
+    res.headers.get("content-type"),
+  );
+  const body = await res.json();
+  console.log("fetchProjects: raw body", body);
+  return body;
 }
 
 export function useProjects() {
