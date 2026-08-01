@@ -16,10 +16,10 @@ export async function POST(req: NextRequest) {
   const access = await checkProjectAccess(req, projectId, "ADMIN");
   if (access instanceof Response) return access;
 
-  await prisma.project.update({
+  const proj = await prisma.project.update({
     where: { id: projectId },
     data: { githubRepo: repo },
   });
 
-  return NextResponse.json({ repo });
+  return NextResponse.json({ proj });
 }

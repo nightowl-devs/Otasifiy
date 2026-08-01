@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo } from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import type { Project } from "@/generated/prisma";
 import { useProjects } from "@/hooks/use-projects";
 
@@ -13,29 +13,36 @@ const ProjectContext = createContext<{
 } | null>(null);
 
 export function ProjectProvider({ children }: { children: React.ReactNode }) {
-  const currRoute = window.location.pathname;
-  const { data: projects = [], isLoading, refetch } = useProjects();
-  let projectId: string | null = null;
+  let currRoute: string;
   try {
-    projectId = localStorage.getItem("currentProject");
-  } catch {}
+    currRoute = window.location.pathname;
+  } catch {
+    currRoute = "/";
+  }
+  const { data: projects = [], isLoading, refetch } = useProjects();
+  const [selectedId, setSelectedId] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem("currentProject");
+    } catch {
+      return null;
+    }
+  });
 
   const project = useMemo(() => {
-    if (projectId) {
-      const match = projects.find((p) => p.id === projectId);
+    if (selectedId) {
+      const match = projects.find((p) => p.id === selectedId);
       if (match) return match;
     }
     return projects[0] as Project | undefined;
-  }, [projects, projectId]);
+  }, [projects, selectedId]);
 
-  const setProject = useCallback(
-    (id: string) => {
+  const setProject = useCallback((id: string) => {
+    try {
       localStorage.setItem("currentProject", id);
-      refetch();
-    },
-    [refetch],
-  );
-  if(currRoute !== "/dashboard" && !project) {
+    } catch {}
+    setSelectedId(id);
+  }, []);
+  if (currRoute !== "/dashboard" && !project) {
     return (
       <div className="flex h-screen w-screen  bg-zinc-900 items-center justify-center">
         <div className="border border-zinc-700 border-t-white rounded-full animate-spin w-12 h-12"></div>
@@ -53,7 +60,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         refresh: refetch,
       }}
     >
-      {children}
+      <div key={project?.id ?? "no-project"}>{children}</div>
     </ProjectContext.Provider>
   );
 }
