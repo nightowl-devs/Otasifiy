@@ -39,7 +39,10 @@ export async function GET(req: NextRequest) {
   const projectId = searchParams.get("projectId");
 
   if (!projectId) {
-    return Response.json({ error: "Missing projectId query param." }, { status: 400 });
+    return Response.json(
+      { error: "Missing projectId query param." },
+      { status: 400 },
+    );
   }
 
   const access = await checkProjectAccess(req, projectId, "MEMBER");
@@ -83,7 +86,10 @@ export async function POST(req: NextRequest) {
   const zipFile = formData.get("zip") as File | null;
 
   if (!version) {
-    return Response.json({ error: "Missing required version field." }, { status: 400 });
+    return Response.json(
+      { error: "Missing required version field." },
+      { status: 400 },
+    );
   }
 
   try {
@@ -93,17 +99,26 @@ export async function POST(req: NextRequest) {
   }
 
   if (!projectId) {
-    return Response.json({ error: "Missing required projectId field." }, { status: 400 });
+    return Response.json(
+      { error: "Missing required projectId field." },
+      { status: 400 },
+    );
   }
 
   const authHeader = req.headers.get("authorization");
   if (!authHeader?.startsWith("Bearer ")) {
-    return Response.json({ error: "Missing or invalid Authorization header." }, { status: 401 });
+    return Response.json(
+      { error: "Missing or invalid Authorization header." },
+      { status: 401 },
+    );
   }
   const keyProject = await prisma.project.findUnique({
     where: { id: projectId },
   });
-  if (!keyProject || !(await Bun.password.verify(authHeader.slice(7), keyProject.apiKeyHash))) {
+  if (
+    !keyProject ||
+    !(await Bun.password.verify(authHeader.slice(7), keyProject.apiKeyHash))
+  ) {
     return Response.json({ error: "Invalid API key." }, { status: 403 });
   }
 
@@ -111,18 +126,28 @@ export async function POST(req: NextRequest) {
   const branch = formData.get("branch")?.toString();
 
   if (!environmentName && !branch) {
-    return Response.json({ error: "Missing required environment or branch field." }, { status: 400 });
+    return Response.json(
+      { error: "Missing required environment or branch field." },
+      { status: 400 },
+    );
   }
 
-  const envWhere = branch ? { branch, projectId } : { name: environmentName, projectId };
+  const envWhere = branch
+    ? { branch, projectId }
+    : { name: environmentName, projectId };
 
   const envRecord = await prisma.environment.findFirst({
     where: envWhere,
   });
 
   if (!envRecord) {
-    const label = branch ? `branch "${branch}"` : `environment "${environmentName}"`;
-    return Response.json({ error: `No environment found for ${label} in this project.` }, { status: 400 });
+    const label = branch
+      ? `branch "${branch}"`
+      : `environment "${environmentName}"`;
+    return Response.json(
+      { error: `No environment found for ${label} in this project.` },
+      { status: 400 },
+    );
   }
 
   const enabledVersions = await prisma.update.findMany({
@@ -145,19 +170,29 @@ export async function POST(req: NextRequest) {
   }
 
   if (!expoConfigFile) {
-    return Response.json({ error: "Missing required expoConfig file." }, { status: 400 });
+    return Response.json(
+      { error: "Missing required expoConfig file." },
+      { status: 400 },
+    );
   }
 
   if (!zipFile) {
-    return Response.json({ error: "Missing required zip file." }, { status: 400 });
+    return Response.json(
+      { error: "Missing required zip file." },
+      { status: 400 },
+    );
   }
 
   const expoConfigJson = JSON.parse(await expoConfigFile.text());
 
-  const runtimeVersion = expoConfigJson.expo?.runtimeVersion ?? expoConfigJson.runtimeVersion;
+  const runtimeVersion =
+    expoConfigJson.expo?.runtimeVersion ?? expoConfigJson.runtimeVersion;
 
   if (!runtimeVersion) {
-    return Response.json({ error: "runtimeVersion not found in expoConfig." }, { status: 400 });
+    return Response.json(
+      { error: "runtimeVersion not found in expoConfig." },
+      { status: 400 },
+    );
   }
 
   // biome-ignore lint/suspicious/noExplicitAny: we know its valid
@@ -167,7 +202,10 @@ export async function POST(req: NextRequest) {
     try {
       metadata = JSON.parse(await metadataFile.text());
     } catch {
-      return Response.json({ error: "Invalid metadata JSON format." }, { status: 400 });
+      return Response.json(
+        { error: "Invalid metadata JSON format." },
+        { status: 400 },
+      );
     }
   }
 
@@ -177,7 +215,10 @@ export async function POST(req: NextRequest) {
   const metadataJsonRaw = await zip.file("metadata.json")?.async("text");
 
   if (!metadataJsonRaw) {
-    return Response.json({ error: "metadata.json not found in zip." }, { status: 400 });
+    return Response.json(
+      { error: "metadata.json not found in zip." },
+      { status: 400 },
+    );
   }
 
   // biome-ignore lint/suspicious/noExplicitAny: parsed from zip metadata.json
@@ -185,14 +226,20 @@ export async function POST(req: NextRequest) {
   try {
     distMetadata = JSON.parse(metadataJsonRaw);
   } catch {
-    return Response.json({ error: "Invalid metadata.json in zip." }, { status: 400 });
+    return Response.json(
+      { error: "Invalid metadata.json in zip." },
+      { status: 400 },
+    );
   }
 
   const iosMeta = distMetadata.fileMetadata?.ios;
   const androidMeta = distMetadata.fileMetadata?.android;
 
   if (!iosMeta || !androidMeta) {
-    return Response.json({ error: "metadata.json missing ios/android fileMetadata." }, { status: 400 });
+    return Response.json(
+      { error: "metadata.json missing ios/android fileMetadata." },
+      { status: 400 },
+    );
   }
 
   const updateId = randomUUID();
@@ -206,7 +253,10 @@ export async function POST(req: NextRequest) {
 
   const uploaded = new Map<string, string>();
 
-  async function uploadAsset(zipPath: string, baseS3Path: string): Promise<{ hash: string; s3Path: string; data: ArrayBuffer }> {
+  async function uploadAsset(
+    zipPath: string,
+    baseS3Path: string,
+  ): Promise<{ hash: string; s3Path: string; data: ArrayBuffer }> {
     const file = zip.file(zipPath);
     if (!file) {
       throw new Error(`File not found in zip: ${zipPath}`);
@@ -239,7 +289,10 @@ export async function POST(req: NextRequest) {
   const androidAssets: PendingAsset[] = [];
 
   for (const a of iosMeta.assets ?? []) {
-    const { hash, s3Path } = await uploadAsset(a.path, `updates/${updateId}/assets/${a.path.split("/").pop()}`);
+    const { hash, s3Path } = await uploadAsset(
+      a.path,
+      `updates/${updateId}/assets/${a.path.split("/").pop()}`,
+    );
     const id = randomUUID();
     iosAssets.push({
       id,
@@ -253,7 +306,10 @@ export async function POST(req: NextRequest) {
   }
 
   for (const a of androidMeta.assets ?? []) {
-    const { hash, s3Path } = await uploadAsset(a.path, `updates/${updateId}/assets/${a.path.split("/").pop()}`);
+    const { hash, s3Path } = await uploadAsset(
+      a.path,
+      `updates/${updateId}/assets/${a.path.split("/").pop()}`,
+    );
     const id = randomUUID();
     androidAssets.push({
       id,
@@ -269,7 +325,10 @@ export async function POST(req: NextRequest) {
   const iosBundleZipPath = iosMeta.bundle;
   const androidBundleZipPath = androidMeta.bundle;
 
-  const iosBundleResult = await uploadAsset(iosBundleZipPath, `updates/${updateId}/ios/bundle`);
+  const iosBundleResult = await uploadAsset(
+    iosBundleZipPath,
+    `updates/${updateId}/ios/bundle`,
+  );
   const iosBundleId = randomUUID();
   const iosBundleAsset: PendingAsset = {
     id: iosBundleId,
@@ -281,7 +340,10 @@ export async function POST(req: NextRequest) {
     s3Path: iosBundleResult.s3Path,
   };
 
-  const androidBundleResult = await uploadAsset(androidBundleZipPath, `updates/${updateId}/android/bundle`);
+  const androidBundleResult = await uploadAsset(
+    androidBundleZipPath,
+    `updates/${updateId}/android/bundle`,
+  );
   const androidBundleId = randomUUID();
   const androidBundleAsset: PendingAsset = {
     id: androidBundleId,
@@ -298,7 +360,7 @@ export async function POST(req: NextRequest) {
       id: updateId,
       disabled,
       environment: { connect: { id: envRecord.id } },
-      project: { connect: { id: envRecord.projectId! } },
+      project: { connect: { id: projectId } },
       commit,
       version,
       manifests: {

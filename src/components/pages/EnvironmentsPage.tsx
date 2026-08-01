@@ -12,8 +12,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useProject } from "@/context/project-context";
 import {
   useCreateEnvironment,
@@ -59,7 +72,11 @@ function AddEnvironmentDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button variant="outline" size="lg" className="border-zinc-700 text-white hover:bg-zinc-800">
+          <Button
+            variant="outline"
+            size="lg"
+            className="border-zinc-700 text-white hover:bg-zinc-800"
+          >
             <Plus size={14} className="mr-1" />
             Add environment
           </Button>
@@ -68,11 +85,16 @@ function AddEnvironmentDialog({
       <DialogContent className="border-zinc-800 bg-zinc-900 text-zinc-100 sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>Add environment</DialogTitle>
-          <DialogDescription>Create a new environment linked to a branch.</DialogDescription>
+          <DialogDescription>
+            Create a new environment linked to a branch.
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <label htmlFor="add-env-name" className="mb-1 block text-xs text-zinc-500">
+            <label
+              htmlFor="add-env-name"
+              className="mb-1 block text-xs text-zinc-500"
+            >
               Name
             </label>
             <input
@@ -85,13 +107,18 @@ function AddEnvironmentDialog({
           </div>
           <div>
             <span className="mb-1 block text-xs text-zinc-500">Branch</span>
-            <Select value={branch} onValueChange={(val) => setBranch(val ?? "")}>
+            <Select
+              value={branch}
+              onValueChange={(val) => setBranch(val ?? "")}
+            >
               <SelectTrigger className="w-full border-zinc-700 bg-zinc-800 text-zinc-100">
                 <SelectValue placeholder="Select a branch" />
               </SelectTrigger>
               <SelectContent className="border-zinc-700 bg-zinc-800 text-zinc-100">
                 {branches === null ? (
-                  <div className="px-3 py-2 text-sm text-zinc-500">Loading...</div>
+                  <div className="px-3 py-2 text-sm text-zinc-500">
+                    Loading...
+                  </div>
                 ) : (
                   branches.map((b) => (
                     <SelectItem key={b} value={b}>
@@ -119,7 +146,13 @@ function AddEnvironmentDialog({
   );
 }
 
-function DeleteEnvironmentDialog({ env, onDeleted }: { env: EnvironmentWithCount; onDeleted: () => void }) {
+function DeleteEnvironmentDialog({
+  env,
+  onDeleted,
+}: {
+  env: EnvironmentWithCount;
+  onDeleted: () => void;
+}) {
   const [open, setOpen] = useState(false);
   const [typed, setTyped] = useState("");
   const deleteEnvironment = useDeleteEnvironment();
@@ -134,7 +167,11 @@ function DeleteEnvironmentDialog({ env, onDeleted }: { env: EnvironmentWithCount
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button variant="ghost" size="icon-lg" className="text-zinc-500 hover:text-red-400">
+          <Button
+            variant="ghost"
+            size="icon-lg"
+            className="text-zinc-500 hover:text-red-400"
+          >
             <Trash2 size={16} />
           </Button>
         }
@@ -143,8 +180,10 @@ function DeleteEnvironmentDialog({ env, onDeleted }: { env: EnvironmentWithCount
         <DialogHeader>
           <DialogTitle>Delete environment</DialogTitle>
           <DialogDescription>
-            This will permanently delete <span className="font-medium text-zinc-200">{env.name}</span> and{" "}
-            <span className="font-semibold text-red-400">all updates</span> associated with it. This action cannot be undone.
+            This will permanently delete{" "}
+            <span className="font-medium text-zinc-200">{env.name}</span> and{" "}
+            <span className="font-semibold text-red-400">all updates</span>{" "}
+            associated with it. This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <input
@@ -169,7 +208,13 @@ function DeleteEnvironmentDialog({ env, onDeleted }: { env: EnvironmentWithCount
   );
 }
 
-function EditEnvironmentDialog({ env, onSaved }: { env: EnvironmentWithCount; onSaved: () => void }) {
+function EditEnvironmentDialog({
+  env,
+  onSaved,
+}: {
+  env: EnvironmentWithCount;
+  onSaved: () => void;
+}) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(env.name);
   const updateEnvironment = useUpdateEnvironment();
@@ -185,7 +230,11 @@ function EditEnvironmentDialog({ env, onSaved }: { env: EnvironmentWithCount; on
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button variant="ghost" size="icon-lg" className="text-zinc-500 hover:text-zinc-300">
+          <Button
+            variant="ghost"
+            size="icon-lg"
+            className="text-zinc-500 hover:text-zinc-300"
+          >
             <EditIcon size={16} />
           </Button>
         }
@@ -193,11 +242,16 @@ function EditEnvironmentDialog({ env, onSaved }: { env: EnvironmentWithCount; on
       <DialogContent className="border-zinc-800 bg-zinc-900 text-zinc-100 sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>Edit environment</DialogTitle>
-          <DialogDescription>Only the name can be changed. Branch is locked after creation.</DialogDescription>
+          <DialogDescription>
+            Only the name can be changed. Branch is locked after creation.
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <label htmlFor="edit-env-name" className="mb-1 block text-xs text-zinc-500">
+            <label
+              htmlFor="edit-env-name"
+              className="mb-1 block text-xs text-zinc-500"
+            >
               Name
             </label>
             <input
@@ -231,12 +285,22 @@ function EditEnvironmentDialog({ env, onSaved }: { env: EnvironmentWithCount; on
   );
 }
 
-function EditableRow({ env, onSaved, onDeleted }: { env: EnvironmentWithCount; onSaved: () => void; onDeleted: () => void }) {
+function EditableRow({
+  env,
+  onSaved,
+  onDeleted,
+}: {
+  env: EnvironmentWithCount;
+  onSaved: () => void;
+  onDeleted: () => void;
+}) {
   return (
     <TableRow className="border-zinc-800 hover:bg-zinc-800/30">
       <TableCell className="text-zinc-100">{env.name}</TableCell>
       <TableCell>{env.branch}</TableCell>
-      <TableCell className="text-zinc-400">{new Date(env.createdAt).toLocaleDateString()}</TableCell>
+      <TableCell className="text-zinc-400">
+        {new Date(env.createdAt).toLocaleDateString()}
+      </TableCell>
       <TableCell>
         <div className="flex justify-end gap-1">
           <EditEnvironmentDialog env={env} onSaved={onSaved} />
@@ -249,7 +313,9 @@ function EditableRow({ env, onSaved, onDeleted }: { env: EnvironmentWithCount; o
 
 export function EnvironmentsPage() {
   const { project } = useProject();
-  const { data: environments = [], refetch: refetchEnvs } = useEnvironments(project.id);
+  const { data: environments = [], refetch: refetchEnvs } = useEnvironments(
+    project.id,
+  );
   const { data: repos = null, refetch: refetchRepos } = useGitHubRepos();
   const [showRepoPicker, setShowRepoPicker] = useState(false);
   const { data: branches = null } = useGitHubBranches(project.id);
@@ -266,7 +332,6 @@ export function EnvironmentsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ repo: fullName, projectId: project.id }),
       });
-
     } catch (err) {
       console.error("Failed to set repo", err);
       setShowRepoPicker(true);
@@ -281,14 +346,22 @@ export function EnvironmentsPage() {
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-zinc-100">Environments</h1>
 
-        <AddEnvironmentDialog branches={branches} projectId={project.id} onCreated={() => refetchEnvs()} />
+        <AddEnvironmentDialog
+          branches={branches}
+          projectId={project.id}
+          onCreated={() => refetchEnvs()}
+        />
       </div>
 
       <div className="mb-8 rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
-        <h2 className="mb-2 text-md font-medium text-white">GitHub Repository</h2>
+        <h2 className="mb-2 text-md font-medium text-white">
+          GitHub Repository
+        </h2>
         <p className=" text-sm text-zinc-500">
-          The linked repository is used to associate branches with environments. <br />
-          Updates pushed via CI will be associated with the correct environment based on the branch name.
+          The linked repository is used to associate branches with environments.{" "}
+          <br />
+          Updates pushed via CI will be associated with the correct environment
+          based on the branch name.
         </p>
         {githubRepo ? (
           <div className="flex items-center justify-between">
@@ -307,7 +380,10 @@ export function EnvironmentsPage() {
                 size="sm"
                 className=" border-zinc-700 text-white hover:bg-zinc-800"
                 onClick={() =>
-                  window.open(`https://github.com/apps/${process.env.NEXT_PUBLIC_GITHUB_APP_NAME}/installations/new`, "_blank")
+                  window.open(
+                    `https://github.com/apps/${process.env.NEXT_PUBLIC_GITHUB_APP_NAME}/installations/new`,
+                    "_blank",
+                  )
                 }
               >
                 Can't see your repo?
@@ -328,13 +404,18 @@ export function EnvironmentsPage() {
               Connect repository
             </Button>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-zinc-500">Can't see your repo?</span>
+              <span className="text-sm text-zinc-500">
+                Can't see your repo?
+              </span>
               <Button
                 variant="outline"
                 size="sm"
                 className="border-zinc-700 text-white hover:bg-zinc-800"
                 onClick={() =>
-                  window.open(`https://github.com/apps/${process.env.NEXT_PUBLIC_GITHUB_APP_NAME}/installations/new`, "_blank")
+                  window.open(
+                    `https://github.com/apps/${process.env.NEXT_PUBLIC_GITHUB_APP_NAME}/installations/new`,
+                    "_blank",
+                  )
                 }
               >
                 Install GitHub App
@@ -355,7 +436,9 @@ export function EnvironmentsPage() {
                   className="w-full px-3 text-left text-sm text-zinc-300"
                   onClick={() => selectRepo(r.fullName)}
                 >
-                  <p className="w-full flex px-2  hover:bg-zinc-800 py-2 rounded-lg">{r.fullName}</p>
+                  <p className="w-full flex px-2  hover:bg-zinc-800 py-2 rounded-lg">
+                    {r.fullName}
+                  </p>
                 </button>
               ))
             )}
@@ -375,11 +458,19 @@ export function EnvironmentsPage() {
           </TableHeader>
           <TableBody>
             {environments.map((env) => (
-              <EditableRow key={env.id} env={env} onSaved={() => refetchEnvs()} onDeleted={() => refetchEnvs()} />
+              <EditableRow
+                key={env.id}
+                env={env}
+                onSaved={() => refetchEnvs()}
+                onDeleted={() => refetchEnvs()}
+              />
             ))}
             {environments.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} className="py-8 text-center text-sm text-zinc-600">
+                <TableCell
+                  colSpan={4}
+                  className="py-8 text-center text-sm text-zinc-600"
+                >
                   No environments yet.
                 </TableCell>
               </TableRow>

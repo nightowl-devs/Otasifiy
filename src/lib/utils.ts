@@ -39,7 +39,10 @@ export function getRolloutIdentifier(req: NextRequest): string {
   );
 }
 
-export function isInRollout(deployPercent: number, identifier: string): boolean {
+export function isInRollout(
+  deployPercent: number,
+  identifier: string,
+): boolean {
   if (deployPercent >= 100) return true;
   if (deployPercent <= 0) return false;
   const hash = createHash("md5").update(identifier).digest("hex");

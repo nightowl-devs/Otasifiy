@@ -17,12 +17,18 @@ export async function GET(req: Request) {
   });
 
   if (!project?.githubRepo) {
-    return Response.json({ error: "No repo connected to this project" }, { status: 400 });
+    return Response.json(
+      { error: "No repo connected to this project" },
+      { status: 400 },
+    );
   }
 
-  const res = await fetch(`https://api.github.com/repos/${project.githubRepo}/branches?per_page=100`, {
-    headers: { Authorization: `Bearer ${session.user.githubToken}` },
-  });
+  const res = await fetch(
+    `https://api.github.com/repos/${project.githubRepo}/branches?per_page=100`,
+    {
+      headers: { Authorization: `Bearer ${session.user.githubToken}` },
+    },
+  );
 
   if (!res.ok) {
     return Response.json({ error: "GitHub API error" }, { status: 502 });

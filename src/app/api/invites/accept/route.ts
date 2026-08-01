@@ -28,7 +28,10 @@ export async function POST(req: NextRequest) {
   }
 
   if (invite.email !== session.user.email) {
-    return Response.json({ error: "This invite is for a different email." }, { status: 403 });
+    return Response.json(
+      { error: "This invite is for a different email." },
+      { status: 403 },
+    );
   }
 
   await prisma.projectMembership.create({

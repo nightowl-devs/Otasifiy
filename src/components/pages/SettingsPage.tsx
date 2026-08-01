@@ -1,6 +1,12 @@
 "use client";
 
-import { CopyIcon, ExternalLinkIcon, RotateCcwIcon, SaveIcon, TriangleAlertIcon } from "lucide-react";
+import {
+  CopyIcon,
+  ExternalLinkIcon,
+  RotateCcwIcon,
+  SaveIcon,
+  TriangleAlertIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -19,7 +25,11 @@ export function SettingsPage() {
   const [origin, setOrigin] = useState("");
   const updateProject = useUpdateProject();
   const DEFAULT_API_KEY = "**********************";
-  const [newApiKey, setNewApiKey] = useState(project.apiKeyHash.startsWith("$argon2id") ? DEFAULT_API_KEY : project.apiKeyHash);
+  const [newApiKey, setNewApiKey] = useState(
+    project.apiKeyHash.startsWith("$argon2id")
+      ? DEFAULT_API_KEY
+      : project.apiKeyHash,
+  );
 
   useEffect(() => {
     setOrigin(window.location.origin);
@@ -63,10 +73,15 @@ export function SettingsPage() {
 
       <div className="space-y-6">
         <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-6">
-          <h2 className="mb-4 text-sm font-medium text-zinc-100">Project details</h2>
+          <h2 className="mb-4 text-sm font-medium text-zinc-100">
+            Project details
+          </h2>
           <div className="space-y-4">
             <div>
-              <label htmlFor="settings-name" className="mb-1 block text-xs text-zinc-500">
+              <label
+                htmlFor="settings-name"
+                className="mb-1 block text-xs text-zinc-500"
+              >
                 Name
               </label>
               <input
@@ -77,7 +92,10 @@ export function SettingsPage() {
               />
             </div>
             <div>
-              <label htmlFor="settings-slug" className="mb-1 block text-xs text-zinc-500">
+              <label
+                htmlFor="settings-slug"
+                className="mb-1 block text-xs text-zinc-500"
+              >
                 Slug
               </label>
               <input
@@ -105,7 +123,10 @@ export function SettingsPage() {
           <h2 className="mb-4 text-sm font-medium text-zinc-100">API key</h2>
           <p className="mb-3 text-sm text-zinc-500">
             Use this key to authenticate update publishing.<br></br>
-            <code className="rounded bg-zinc-800 px-1 py-0.5 text-xs text-zinc-300">Authorization: Bearer &lt;API_KEY&gt;</code>.
+            <code className="rounded bg-zinc-800 px-1 py-0.5 text-xs text-zinc-300">
+              Authorization: Bearer &lt;API_KEY&gt;
+            </code>
+            .
           </p>
           <div className="flex items-center gap-2">
             <code className="flex-1 truncate rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 font-mono text-xs text-zinc-300">
@@ -119,12 +140,15 @@ export function SettingsPage() {
             >
               <CopyIcon className="size-4" />
             </button>
-            {copiedApiKey && <span className="shrink-0 text-xs text-green-400">Copied!</span>}
+            {copiedApiKey && (
+              <span className="shrink-0 text-xs text-green-400">Copied!</span>
+            )}
           </div>
           <div className="flex flex-col gap-1 mt-2 text-sm">
             {newApiKey !== DEFAULT_API_KEY && (
               <span className="shrink-0 text-xs text-red-400">
-                This key will be hidden after you leave this page. Make sure to copy it now!
+                This key will be hidden after you leave this page. Make sure to
+                copy it now!
               </span>
             )}
             <Button
@@ -140,9 +164,13 @@ export function SettingsPage() {
         </div>
         {project.githubRepo && (
           <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-6">
-            <h2 className="mb-4 text-sm font-medium text-zinc-100">GitHub repository</h2>
+            <h2 className="mb-4 text-sm font-medium text-zinc-100">
+              GitHub repository
+            </h2>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-zinc-400">{project.githubRepo}</span>
+              <span className="text-sm text-zinc-400">
+                {project.githubRepo}
+              </span>
               <a
                 href={`https://github.com/${project.githubRepo}`}
                 target="_blank"
@@ -155,12 +183,16 @@ export function SettingsPage() {
           </div>
         )}
         <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-6">
-          <h2 className="mb-4 text-sm font-medium text-zinc-100">Project info</h2>
+          <h2 className="mb-4 text-sm font-medium text-zinc-100">
+            Project info
+          </h2>
           <div className="space-y-3 text-sm">
             <div className="flex items-center justify-between">
               <span className="text-zinc-500">ID</span>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs text-zinc-300">{project.id}</span>
+                <span className="font-mono text-xs text-zinc-300">
+                  {project.id}
+                </span>
                 <button
                   type="button"
                   onClick={() => copy(project.id, setCopiedId)}
@@ -168,14 +200,18 @@ export function SettingsPage() {
                 >
                   <CopyIcon className="size-3.5" />
                 </button>
-                {copiedId && <span className="text-xs text-green-400">Copied!</span>}
+                {copiedId && (
+                  <span className="text-xs text-green-400">Copied!</span>
+                )}
               </div>
             </div>
 
             <div className="flex items-center justify-between">
               <span className="text-zinc-500">Manifest URL</span>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs text-zinc-300 max-w-64 truncate">{manifestUrl}</span>
+                <span className="font-mono text-xs text-zinc-300 max-w-64 truncate">
+                  {manifestUrl}
+                </span>
                 <button
                   type="button"
                   onClick={() => copy(manifestUrl, setCopiedManifest)}
@@ -183,7 +219,9 @@ export function SettingsPage() {
                 >
                   <CopyIcon className="size-3.5" />
                 </button>
-                {copiedManifest && <span className="text-xs text-green-400">Copied!</span>}
+                {copiedManifest && (
+                  <span className="text-xs text-green-400">Copied!</span>
+                )}
               </div>
             </div>
           </div>
