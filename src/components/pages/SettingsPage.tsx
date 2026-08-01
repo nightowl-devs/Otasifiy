@@ -5,9 +5,7 @@ import {
   ExternalLinkIcon,
   RotateCcwIcon,
   SaveIcon,
-  TriangleAlertIcon,
 } from "lucide-react";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useProject } from "@/context/project-context";

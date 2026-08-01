@@ -1,6 +1,5 @@
-import { cookies } from "next/headers";
+import { requireSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getSession, requireSession } from "@/lib/auth";
 
 export async function GET(req: Request) {
   const session = await requireSession();

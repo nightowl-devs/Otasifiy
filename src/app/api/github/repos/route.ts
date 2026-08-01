@@ -1,5 +1,3 @@
-import { cookies } from "next/headers";
-import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth";
 
 export async function GET() {

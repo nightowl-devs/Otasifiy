@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { getSessionFromRequest, requireSession } from "@/lib/auth";
+import { requireSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {

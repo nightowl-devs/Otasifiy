@@ -1,6 +1,6 @@
 "use client";
 import { LogOutIcon, PackageOpenIcon } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUser } from "@/context/auth-context";
 import { useProject } from "@/context/project-context";

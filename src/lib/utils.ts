@@ -1,6 +1,6 @@
+import { createHash } from "node:crypto";
 import { type ClassValue, clsx } from "clsx";
-import { createHash } from "crypto";
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {

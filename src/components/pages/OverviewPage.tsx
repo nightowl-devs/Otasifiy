@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useState } from "react";
-import { useUser } from "@/context/auth-context";
 import { useProject } from "@/context/project-context";
 import type { Project } from "@/generated/prisma";
 import { useDeleteProject } from "@/hooks/use-projects";
