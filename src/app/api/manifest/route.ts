@@ -1,26 +1,7 @@
-import { createHash } from "node:crypto";
 import FormData from "form-data";
 import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-
-function getRolloutIdentifier(req: NextRequest): string {
-  const headers = req.headers;
-  return (
-    headers.get("expo-device-id") ||
-    headers.get("x-deployment-id") ||
-    req.headers.get("x-forwarded-for") ||
-    req.headers.get("x-real-ip") ||
-    "0.0.0.0"
-  );
-}
-
-function isInRollout(deployPercent: number, identifier: string): boolean {
-  if (deployPercent >= 100) return true;
-  if (deployPercent <= 0) return false;
-  const hash = createHash("md5").update(identifier).digest("hex");
-  const num = Number.parseInt(hash.slice(0, 8), 16);
-  return num % 100 < deployPercent;
-}
+import { getRolloutIdentifier, isInRollout } from "@/lib/utils";
 
 export async function GET(req: NextRequest) {
   const headers = req.headers;
@@ -119,9 +100,7 @@ export async function GET(req: NextRequest) {
     const response = new NextResponse(new Uint8Array(buffer), {
       status: 200,
       headers: {
-        "content-type": formData
-          .getHeaders()
-          ["content-type"].replace("multipart/form-data", "multipart/mixed"),
+        "content-type": formData.getHeaders()["content-type"].replace("multipart/form-data", "multipart/mixed"),
 
         "expo-protocol-version": "1",
         "expo-sfv-version": "0",
@@ -152,9 +131,7 @@ export async function GET(req: NextRequest) {
     const response = new NextResponse(new Uint8Array(buffer), {
       status: 200,
       headers: {
-        "content-type": formData
-          .getHeaders()
-          ["content-type"].replace("multipart/form-data", "multipart/mixed"),
+        "content-type": formData.getHeaders()["content-type"].replace("multipart/form-data", "multipart/mixed"),
 
         "expo-protocol-version": "1",
         "expo-sfv-version": "0",
@@ -165,15 +142,10 @@ export async function GET(req: NextRequest) {
     return response;
   }
 
-  const dbManifest = update.manifests.find(
-    (m) => m.platform === platform && m.runtimeVersion === runtimeVersion,
-  );
+  const dbManifest = update.manifests.find((m) => m.platform === platform && m.runtimeVersion === runtimeVersion);
 
   if (!dbManifest) {
-    return NextResponse.json(
-      { error: "No matching manifest found" },
-      { status: 404 },
-    );
+    return NextResponse.json({ error: "No matching manifest found" }, { status: 404 });
   }
 
   const toAsset = (a: NonNullable<typeof dbManifest.launchAsset>) => ({
@@ -188,9 +160,7 @@ export async function GET(req: NextRequest) {
     id: dbManifest.id,
     createdAt: dbManifest.createdAt.toISOString(),
     runtimeVersion: dbManifest.runtimeVersion,
-    launchAsset: dbManifest.launchAsset
-      ? toAsset(dbManifest.launchAsset)
-      : undefined,
+    launchAsset: dbManifest.launchAsset ? toAsset(dbManifest.launchAsset) : undefined,
     assets: dbManifest.assets.map(toAsset),
     metadata: dbManifest.metadata as Record<string, string>,
     extra: dbManifest.extra as Record<string, unknown>,
@@ -206,9 +176,7 @@ export async function GET(req: NextRequest) {
   const response = new NextResponse(new Uint8Array(buffer), {
     status: 200,
     headers: {
-      "content-type": form
-        .getHeaders()
-        ["content-type"].replace("multipart/form-data", "multipart/mixed"),
+      "content-type": form.getHeaders()["content-type"].replace("multipart/form-data", "multipart/mixed"),
       "expo-protocol-version": "1",
       "expo-sfv-version": "0",
       "cache-control": "private, max-age=0, must-revalidate",

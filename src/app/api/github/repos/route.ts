@@ -1,12 +1,9 @@
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { requireSession } from "@/lib/auth";
 
 export async function GET() {
-  const cookie = (await cookies()).get("session_token")!;
-  const session = await prisma.session.findUnique({
-    where: { token: cookie.value, expiresAt: { gt: new Date() } },
-    include: { user: true },
-  })!;
+  const session = await requireSession();
 
   if (!session?.user.githubToken) {
     return Response.json({ error: "No GitHub token" }, { status: 401 });

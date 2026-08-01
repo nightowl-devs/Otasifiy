@@ -1,10 +1,9 @@
 import type { NextRequest } from "next/server";
-import { getSessionFromRequest } from "@/lib/auth";
+import { getSessionFromRequest, requireSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
-  // biome-ignore lint/style/noNonNullAssertion: proxy already validated session
-  const session = (await getSessionFromRequest(req))!;
+  const session = await requireSession();
 
   const body = await req.json();
 
@@ -29,10 +28,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (invite.email !== session.user.email) {
-    return Response.json(
-      { error: "This invite is for a different email." },
-      { status: 403 },
-    );
+    return Response.json({ error: "This invite is for a different email." }, { status: 403 });
   }
 
   await prisma.projectMembership.create({
