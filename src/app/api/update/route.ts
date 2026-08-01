@@ -100,9 +100,10 @@ export async function POST(req: NextRequest) {
   if (!authHeader?.startsWith("Bearer ")) {
     return Response.json({ error: "Missing or invalid Authorization header." }, { status: 401 });
   }
-  const apiKey = await Bun.password.hash(authHeader.slice(7));
-  const keyProject = await prisma.project.findUnique({ where: { apiKeyHash: apiKey } });
-  if (!keyProject || keyProject.id !== projectId) {
+  const keyProject = await prisma.project.findUnique({
+    where: { id: projectId },
+  });
+  if (!keyProject || !(await Bun.password.verify(authHeader.slice(7), keyProject.apiKeyHash))) {
     return Response.json({ error: "Invalid API key." }, { status: 403 });
   }
 
@@ -122,6 +123,25 @@ export async function POST(req: NextRequest) {
   if (!envRecord) {
     const label = branch ? `branch "${branch}"` : `environment "${environmentName}"`;
     return Response.json({ error: `No environment found for ${label} in this project.` }, { status: 400 });
+  }
+
+  const enabledVersions = await prisma.update.findMany({
+    where: { environmentId: envRecord.id, disabled: false },
+    select: { version: true },
+  });
+
+  const maxVersion = enabledVersions.reduce<SemVer | null>((max, u) => {
+    const candidate = new SemVer(u.version);
+    return max === null || candidate.compare(max) > 0 ? candidate : max;
+  }, null);
+
+  if (maxVersion && new SemVer(version).compare(maxVersion) <= 0) {
+    return Response.json(
+      {
+        error: `Version ${version} is not newer than the latest enabled version ${maxVersion.version} in this environment.`,
+      },
+      { status: 409 },
+    );
   }
 
   if (!expoConfigFile) {
