@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
     where.projectId = projectIdParam;
   }
 
-  const update = await prisma.update.findFirst({
+  const updates = await prisma.update.findMany({
     where,
     orderBy: {
       createdAt: "desc",
@@ -81,6 +81,41 @@ export async function GET(req: NextRequest) {
       },
     },
   });
+
+  if (updates.length === 0) {
+    const formData = new FormData();
+
+    formData.append(
+      "directive",
+      JSON.stringify({
+        type: "noUpdateAvailable",
+      }),
+      {
+        contentType: "application/json",
+      },
+    );
+
+    const buffer = formData.getBuffer();
+
+    const response = new NextResponse(new Uint8Array(buffer), {
+      status: 200,
+      headers: {
+        "content-type": formData
+          .getHeaders()
+          ["content-type"].replace("multipart/form-data", "multipart/mixed"),
+
+        "expo-protocol-version": "1",
+        "expo-sfv-version": "0",
+        "cache-control": "private, max-age=0, must-revalidate",
+      },
+    });
+
+    return response;
+  }
+
+  const identifier = getRolloutIdentifier(req);
+
+  const update = updates.find((u) => isInRollout(u.deployPercent, identifier));
 
   if (!update) {
     const formData = new FormData();
@@ -100,7 +135,9 @@ export async function GET(req: NextRequest) {
     const response = new NextResponse(new Uint8Array(buffer), {
       status: 200,
       headers: {
-        "content-type": formData.getHeaders()["content-type"].replace("multipart/form-data", "multipart/mixed"),
+        "content-type": formData
+          .getHeaders()
+          ["content-type"].replace("multipart/form-data", "multipart/mixed"),
 
         "expo-protocol-version": "1",
         "expo-sfv-version": "0",
@@ -111,41 +148,15 @@ export async function GET(req: NextRequest) {
     return response;
   }
 
-  const identifier = getRolloutIdentifier(req);
-
-  if (!isInRollout(update.deployPercent, identifier)) {
-    const formData = new FormData();
-
-    formData.append(
-      "directive",
-      JSON.stringify({
-        type: "noUpdateAvailable",
-      }),
-      {
-        contentType: "application/json",
-      },
-    );
-
-    const buffer = formData.getBuffer();
-
-    const response = new NextResponse(new Uint8Array(buffer), {
-      status: 200,
-      headers: {
-        "content-type": formData.getHeaders()["content-type"].replace("multipart/form-data", "multipart/mixed"),
-
-        "expo-protocol-version": "1",
-        "expo-sfv-version": "0",
-        "cache-control": "private, max-age=0, must-revalidate",
-      },
-    });
-
-    return response;
-  }
-
-  const dbManifest = update.manifests.find((m) => m.platform === platform && m.runtimeVersion === runtimeVersion);
+  const dbManifest = update.manifests.find(
+    (m) => m.platform === platform && m.runtimeVersion === runtimeVersion,
+  );
 
   if (!dbManifest) {
-    return NextResponse.json({ error: "No matching manifest found" }, { status: 404 });
+    return NextResponse.json(
+      { error: "No matching manifest found" },
+      { status: 404 },
+    );
   }
 
   const toAsset = (a: NonNullable<typeof dbManifest.launchAsset>) => ({
@@ -160,7 +171,9 @@ export async function GET(req: NextRequest) {
     id: dbManifest.id,
     createdAt: dbManifest.createdAt.toISOString(),
     runtimeVersion: dbManifest.runtimeVersion,
-    launchAsset: dbManifest.launchAsset ? toAsset(dbManifest.launchAsset) : undefined,
+    launchAsset: dbManifest.launchAsset
+      ? toAsset(dbManifest.launchAsset)
+      : undefined,
     assets: dbManifest.assets.map(toAsset),
     metadata: dbManifest.metadata as Record<string, string>,
     extra: dbManifest.extra as Record<string, unknown>,
@@ -176,7 +189,9 @@ export async function GET(req: NextRequest) {
   const response = new NextResponse(new Uint8Array(buffer), {
     status: 200,
     headers: {
-      "content-type": form.getHeaders()["content-type"].replace("multipart/form-data", "multipart/mixed"),
+      "content-type": form
+        .getHeaders()
+        ["content-type"].replace("multipart/form-data", "multipart/mixed"),
       "expo-protocol-version": "1",
       "expo-sfv-version": "0",
       "cache-control": "private, max-age=0, must-revalidate",
