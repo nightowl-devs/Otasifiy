@@ -30,27 +30,29 @@ enum InviteStatus {
 }
 
 model Project {
-  id          String        @id @default(uuid())
-  name        String
-  slug        String        @unique
-  githubRepo  String?
-  apiKeyHash      String    @unique
+  id           String              @id @default(uuid())
+  name         String
+  slug         String              @unique
+  githubRepo   String?
+  apiKeyHash   String              @unique
   environments Environment[]
-  user        User          @relation(fields: [userId], references: [id])
-  updates     Update[]
-  memberships ProjectMembership[]
-  invites     ProjectInvite[]
-  userId      String
+  user         User                @relation(fields: [userId], references: [id])
+  updates      Update[]
+  memberships  ProjectMembership[]
+  invites      ProjectInvite[]
+  userId       String
+  downloads    Download[]
 }
 
 model Environment {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
+  id        String     @id @default(uuid())
+  createdAt DateTime   @default(now())
   name      String
   branch    String
   updates   Update[]
-  project   Project? @relation(fields: [projectId], references: [id])
+  project   Project?   @relation(fields: [projectId], references: [id])
   projectId String?
+  downloads Download[]
 
   @@unique([name, projectId])
 }
@@ -65,9 +67,10 @@ model Update {
   commit        String
   manifests     Manifest[]
   environmentId String
-  project       Project?   @relation(fields: [projectId], references: [id])
-  projectId     String?
-  deployPercent Int     @default(100)
+  project       Project   @relation(fields: [projectId], references: [id])
+  projectId     String
+  deployPercent Int        @default(100)
+  downloads     Download[]
 }
 
 model Manifest {
@@ -90,18 +93,18 @@ model Manifest {
 }
 
 model User {
-  id          String    @id @default(uuid())
-  createdAt   DateTime  @default(now())
-  email       String    @unique
-  sessions    Session[]
-  firstName   String
-  lastName    String
-  avatarUrl   String?
-  githubId    String?   @unique
-  githubToken String?
-  projects    Project[]
-  memberships ProjectMembership[]
-  invitedInvites ProjectInvite[] @relation("invitedBy")
+  id             String              @id @default(uuid())
+  createdAt      DateTime            @default(now())
+  email          String              @unique
+  sessions       Session[]
+  firstName      String
+  lastName       String
+  avatarUrl      String?
+  githubId       String?             @unique
+  githubToken    String?
+  projects       Project[]
+  memberships    ProjectMembership[]
+  invitedInvites ProjectInvite[]     @relation("invitedBy")
 }
 
 model Session {
@@ -129,11 +132,11 @@ model Asset {
 }
 
 model ProjectMembership {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  id        String      @id @default(uuid())
+  createdAt DateTime    @default(now())
+  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   role      ProjectRole
 
@@ -141,15 +144,34 @@ model ProjectMembership {
 }
 
 model ProjectInvite {
-  id          String   @id @default(uuid())
-  createdAt   DateTime @default(now())
-  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  id          String       @id @default(uuid())
+  createdAt   DateTime     @default(now())
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId   String
   email       String
-  role        ProjectRole @default(MEMBER)
-  token       String   @unique @default(uuid())
+  role        ProjectRole  @default(MEMBER)
+  token       String       @unique @default(uuid())
   expiresAt   DateTime
   status      InviteStatus @default(PENDING)
-  invitedBy   User     @relation("invitedBy", fields: [invitedById], references: [id])
+  invitedBy   User         @relation("invitedBy", fields: [invitedById], references: [id])
   invitedById String
+}
+
+model Download {
+  id             String       @id @default(uuid())
+  createdAt      DateTime     @default(now())
+  project        Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId      String
+  update         Update       @relation(fields: [updateId], references: [id], onDelete: Cascade)
+  updateId       String
+  environment    Environment? @relation(fields: [environmentId], references: [id], onDelete: SetNull)
+  environmentId  String?
+  platform       Platform
+  runtimeVersion String
+  sdkVersion     String?
+  deviceIdHash   String?
+
+  @@index([projectId, createdAt])
+  @@index([projectId, platform])
+  @@index([projectId, runtimeVersion])
 }

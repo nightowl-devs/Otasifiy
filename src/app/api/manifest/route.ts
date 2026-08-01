@@ -2,6 +2,7 @@ import FormData from "form-data";
 import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getRolloutIdentifier, isInRollout } from "@/lib/utils";
+import { sha } from "bun";
 
 export async function GET(req: NextRequest) {
   const headers = req.headers;
@@ -100,9 +101,7 @@ export async function GET(req: NextRequest) {
     const response = new NextResponse(new Uint8Array(buffer), {
       status: 200,
       headers: {
-        "content-type": formData
-          .getHeaders()
-          ["content-type"].replace("multipart/form-data", "multipart/mixed"),
+        "content-type": formData.getHeaders()["content-type"].replace("multipart/form-data", "multipart/mixed"),
 
         "expo-protocol-version": "1",
         "expo-sfv-version": "0",
@@ -135,9 +134,7 @@ export async function GET(req: NextRequest) {
     const response = new NextResponse(new Uint8Array(buffer), {
       status: 200,
       headers: {
-        "content-type": formData
-          .getHeaders()
-          ["content-type"].replace("multipart/form-data", "multipart/mixed"),
+        "content-type": formData.getHeaders()["content-type"].replace("multipart/form-data", "multipart/mixed"),
 
         "expo-protocol-version": "1",
         "expo-sfv-version": "0",
@@ -148,15 +145,10 @@ export async function GET(req: NextRequest) {
     return response;
   }
 
-  const dbManifest = update.manifests.find(
-    (m) => m.platform === platform && m.runtimeVersion === runtimeVersion,
-  );
+  const dbManifest = update.manifests.find((m) => m.platform === platform && m.runtimeVersion === runtimeVersion);
 
   if (!dbManifest) {
-    return NextResponse.json(
-      { error: "No matching manifest found" },
-      { status: 404 },
-    );
+    return NextResponse.json({ error: "No matching manifest found" }, { status: 404 });
   }
 
   const toAsset = (a: NonNullable<typeof dbManifest.launchAsset>) => ({
@@ -171,14 +163,23 @@ export async function GET(req: NextRequest) {
     id: dbManifest.id,
     createdAt: dbManifest.createdAt.toISOString(),
     runtimeVersion: dbManifest.runtimeVersion,
-    launchAsset: dbManifest.launchAsset
-      ? toAsset(dbManifest.launchAsset)
-      : undefined,
+    launchAsset: dbManifest.launchAsset ? toAsset(dbManifest.launchAsset) : undefined,
     assets: dbManifest.assets.map(toAsset),
     metadata: dbManifest.metadata as Record<string, string>,
     extra: dbManifest.extra as Record<string, unknown>,
   };
 
+  await prisma.download.create({
+    data: {
+      projectId: update.projectId,
+      updateId: update.id,
+      environmentId: update.environmentId,
+      platform,
+      runtimeVersion,
+      sdkVersion: sdkVersion,
+      deviceIdHash: sha(getRolloutIdentifier(req)).toString(),
+    },
+  });
   const form = new FormData();
   form.append("manifest", JSON.stringify(manifest), {
     contentType: "application/json; charset=utf-8",
@@ -189,9 +190,7 @@ export async function GET(req: NextRequest) {
   const response = new NextResponse(new Uint8Array(buffer), {
     status: 200,
     headers: {
-      "content-type": form
-        .getHeaders()
-        ["content-type"].replace("multipart/form-data", "multipart/mixed"),
+      "content-type": form.getHeaders()["content-type"].replace("multipart/form-data", "multipart/mixed"),
       "expo-protocol-version": "1",
       "expo-sfv-version": "0",
       "cache-control": "private, max-age=0, must-revalidate",
