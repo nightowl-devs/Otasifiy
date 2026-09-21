@@ -95,7 +95,6 @@ export function OverviewPage() {
     setDeleteOpen(false);
   }, [deletingProjectName, project, deleteProject]);
 
-  console.log("before load");
   if (loading) {
     return (
       <div className="mx-auto max-w-6xl h-[calc(100dvh-4rem)] flex  px-8">
@@ -113,10 +112,7 @@ export function OverviewPage() {
     );
   }
 
-  console.log("after load");
-
   if (projects.length === 0) {
-    console.log("no projects");
     return (
       <div className="mx-auto max-w-6xl h-[calc(100dvh-4rem)] flex items-center justify-center px-8">
         <GridBox>

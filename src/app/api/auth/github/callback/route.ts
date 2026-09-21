@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { encryptToken } from "@/lib/token-crypto";
 
 async function getPrimaryEmail(
   token: string,
@@ -86,12 +87,13 @@ export async function GET(req: Request) {
     });
   }
   const nameParts = (githubUser.name ?? githubUser.login ?? "").split(" ");
+  const encryptedToken = encryptToken(accessToken);
   if (user) {
     await prisma.user.update({
       where: { id: user.id },
       data: {
         githubId: String(githubUser.id),
-        githubToken: accessToken,
+        githubToken: encryptedToken,
         avatarUrl: githubUser.avatar_url,
         email: primaryEmail,
         firstName: nameParts[0] || "",
@@ -103,7 +105,7 @@ export async function GET(req: Request) {
       data: {
         email: primaryEmail,
         githubId: String(githubUser.id),
-        githubToken: accessToken,
+        githubToken: encryptedToken,
         avatarUrl: githubUser.avatar_url,
         firstName: nameParts[0] || "",
         lastName: nameParts[1] ?? "",

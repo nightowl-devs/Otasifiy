@@ -1,4 +1,5 @@
 import { requireSession } from "@/lib/auth";
+import { resolveGithubToken } from "@/lib/token-crypto";
 
 export async function GET() {
   const session = await requireSession();
@@ -10,7 +11,9 @@ export async function GET() {
   const res = await fetch(
     "https://api.github.com/user/repos?per_page=100&sort=updated",
     {
-      headers: { Authorization: `Bearer ${session.user.githubToken}` },
+      headers: {
+        Authorization: `Bearer ${resolveGithubToken(session.user.githubToken)}`,
+      },
     },
   );
 

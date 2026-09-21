@@ -1,7 +1,18 @@
-import { brotliCompressSync } from "node:zlib";
-import { deflateSync, gzipSync } from "bun";
+import { promisify } from "node:util";
+import { brotliCompress } from "node:zlib";
 import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
+
+const brotliCompressAsync = promisify(brotliCompress);
+
+const BROTLI_MAX_BYTES = 25 * 1024 * 1024;
+
+function accepts(encoding: string | null, token: string): boolean {
+  if (!encoding) return false;
+  return encoding
+    .split(",")
+    .some((part) => part.trim().split(";")[0] === token);
+}
 
 export async function GET(req: NextRequest) {
   const params = req.nextUrl.searchParams;
@@ -27,37 +38,40 @@ export async function GET(req: NextRequest) {
     return Response.json({ error: "Asset file not found" }, { status: 404 });
   }
 
-  const encoding = req.headers.get("accept-encoding");
-  const acceptsGzip = encoding?.includes("gzip");
-  const acceptsBrotli = encoding?.includes("br");
-  const acceptsDeflate = encoding?.includes("deflate");
-
   const headers: Record<string, string> = {
     "Content-Type": asset.contentType || "",
     "Cache-Control": "public, max-age=31536000, immutable",
   };
 
-  if (acceptsBrotli) {
-    const compressed = brotliCompressSync(await assetFile.bytes());
-    headers["Content-Encoding"] = "br";
-    headers["Content-Length"] = compressed.length.toString();
-    return new Response(compressed, { headers });
+  const encoding = req.headers.get("accept-encoding");
+  const size = (await assetFile.stat()).size;
+
+  if (accepts(encoding, "gzip")) {    headers["Content-Encoding"] = "gzip";
+    const stream = assetFile
+      .stream()
+      .pipeThrough(new CompressionStream("gzip"));
+    return new Response(stream, { headers });
   }
 
-  if (acceptsGzip) {
-    const compressed = gzipSync(await assetFile.bytes());
-    headers["Content-Encoding"] = "gzip";
-    headers["Content-Length"] = compressed.length.toString();
-    return new Response(compressed, { headers });
-  }
-
-  if (acceptsDeflate) {
-    const compressed = deflateSync(await assetFile.bytes());
+  if (accepts(encoding, "deflate")) {
     headers["Content-Encoding"] = "deflate";
-    headers["Content-Length"] = compressed.length.toString();
-    return new Response(compressed, { headers });
+    const stream = assetFile
+      .stream()
+      .pipeThrough(new CompressionStream("deflate"));
+    return new Response(stream, { headers });
   }
 
-  headers["Content-Length"] = (await assetFile.stat()).size.toString();
+  if (accepts(encoding, "br")) {
+    if (size <= BROTLI_MAX_BYTES) {
+      const compressed = await brotliCompressAsync(
+        Buffer.from(await assetFile.bytes()),
+      );
+      headers["Content-Encoding"] = "br";
+      headers["Content-Length"] = compressed.length.toString();
+      return new Response(compressed, { headers });
+    }
+  }
+
+  headers["Content-Length"] = size.toString();
   return new Response(assetFile.stream(), { headers });
 }

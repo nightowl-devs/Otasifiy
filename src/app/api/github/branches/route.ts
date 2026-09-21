@@ -1,5 +1,6 @@
 import { requireSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { resolveGithubToken } from "@/lib/token-crypto";
 
 export async function GET(req: Request) {
   const session = await requireSession();
@@ -22,10 +23,16 @@ export async function GET(req: Request) {
     );
   }
 
+  if (!session.user.githubToken) {
+    return Response.json({ error: "No GitHub token" }, { status: 401 });
+  }
+
   const res = await fetch(
     `https://api.github.com/repos/${project.githubRepo}/branches?per_page=100`,
     {
-      headers: { Authorization: `Bearer ${session.user.githubToken}` },
+      headers: {
+        Authorization: `Bearer ${resolveGithubToken(session.user.githubToken)}`,
+      },
     },
   );
 
