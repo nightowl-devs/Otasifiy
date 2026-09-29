@@ -7,8 +7,7 @@
     "build": "bun --bun next build",
     "start": "bun --bun next start",
     "lint": "biome check",
-    "format": "biome format --write",
-    "db:seed": "bun run prisma/seed.ts"
+    "format": "biome format --write"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

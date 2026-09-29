@@ -40,11 +40,12 @@ export async function POST(req: NextRequest) {
   const existing = await prisma.project.findUnique({ where: { slug } });
   if (existing) slug = `${slug}-${Date.now()}`;
 
+  const rawApiKey = generateApiKey();
   const project = await prisma.project.create({
     data: {
       name: body.name,
       slug,
-      apiKeyHash: await Bun.password.hash(generateApiKey()),
+      apiKeyHash: await Bun.password.hash(rawApiKey),
       githubRepo: body.githubRepo ?? null,
       user: { connect: { id: session.user.id } },
       memberships: {
@@ -53,5 +54,5 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  return Response.json(project, { status: 201 });
+  return Response.json({ ...project, apiKey: rawApiKey }, { status: 201 });
 }

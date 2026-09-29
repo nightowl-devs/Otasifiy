@@ -9,6 +9,7 @@ const PUBLIC_ROUTES = [
   "/api/asset",
   "/api/manifest",
   "/api/status",
+  "/api/update",
 ];
 
 const DASHBOARD_PAGES = [

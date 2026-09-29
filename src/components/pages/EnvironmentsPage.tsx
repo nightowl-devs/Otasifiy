@@ -332,8 +332,7 @@ export function EnvironmentsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ repo: fullName, projectId: project.id }),
       });
-    } catch (err) {
-      console.error("Failed to set repo", err);
+    } catch {
       setShowRepoPicker(true);
       setCurrentRepo(prev);
     }
