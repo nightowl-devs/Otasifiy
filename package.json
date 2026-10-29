@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "bun --bun next dev",
-    "build": "bun --bun next build",
-    "start": "bun --bun next start",
+    "dev": "bun run --bun next dev",
+    "build": "prisma generate && bun run --bun next build",
+    "start": "bun run --bun next start",
+    "seed:demo": "bun scripts/seed-demo.ts",
     "lint": "biome check",
     "format": "biome format --write"
   },

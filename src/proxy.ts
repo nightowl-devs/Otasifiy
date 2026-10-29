@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 const PUBLIC_ROUTES = [
   "/login",
+  "/api/auth/demo",
   "/api/auth/github",
   "/api/auth/github/callback",
   "/api/asset",
