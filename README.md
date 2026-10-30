@@ -53,7 +53,7 @@ S3_ENDPOINT=
 S3_REGION=
 GITHUB_CLIENT_ID=       # from your GitHub OAuth app
 GITHUB_CLIENT_SECRET=
-TOKEN_ENCRYPTION_KEY=   # any long random string (encrypts GitHub tokens in the db)
+TOKEN_ENCRYPTION_KEY=  
 NEXT_PUBLIC_URL=        # e.g. http://localhost:3000
 NEXT_PUBLIC_GITHUB_APP_NAME=
 ```
@@ -63,8 +63,6 @@ NEXT_PUBLIC_GITHUB_APP_NAME=
 ```bash
 bunx prisma db push
 ```
-
-(`db:seed` is in package.json but the seed file doesn't exist yet lol, skip it)
 
 - Start dev server:
 
